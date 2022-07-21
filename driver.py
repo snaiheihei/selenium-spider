@@ -70,6 +70,10 @@ class Driver(object):
         el = self.locateElement(locate_type, value)
         return el.get_attribute(tagAttr)
 
+    def get_location(self, locate_type, value):
+        el = self.locateElement(locate_type, value)
+        return el.rect
+
     def __del__(self):
         # driver销毁时关闭
         self.driver.close()

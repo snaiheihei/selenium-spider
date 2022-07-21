@@ -7,6 +7,7 @@ import re
 
 patient_infos = []
 driver = Driver()
+actionChain = ActionChains(driver.driver)
 
 def logon(url_logon, name, passwd):
     driver.open_url(url_logon)
@@ -26,24 +27,31 @@ def logon(url_logon, name, passwd):
     time.sleep(5)
 
 def get_eventID():
+    # new requirment 7/21
+    select_el = driver.locateElement("css", "#switch-appt-view > nz-select")
+    select_el.click()
+    actionChain.move_to_element(select_el).move_by_offset(30,50).click().perform()
+    driver.click("css", "#switch-appt-view > nz-radio-group > label:nth-child(2)")
+
     # 获取所有event ID
+    time.sleep(8)
     event_id = []
     els_eventID = driver.locateElements("css", "#calendar-container > div.dhx_cal_data div[event_id]")
     for el in  els_eventID:
         id = el.get_attribute("event_id")
         event_id.append(id)
     # 展开更多
-    more_arrow = driver.locateElement("css", "#calendar-container > div.event-count-hint.next.ng-star-inserted > div.count")
-    if more_arrow:
-        # headless 模式下会出现click not reachable exception
-        my_actionChain = ActionChains(driver.driver)
-        my_actionChain.move_to_element(more_arrow).perform()
-        driver.click("css", "#calendar-container > div.event-count-hint.next.ng-star-inserted > div.count")
-        time.sleep(8)
-        more_els_eventID = driver.locateElements("css", "#calendar-container > div.dhx_cal_data div[event_id]")
-        for el in more_els_eventID:
-            id = el.get_attribute("event_id")
-            event_id.append(id)
+    # more_arrow = driver.locateElement("css", "#calendar-container > div.event-count-hint.next.ng-star-inserted > div.count")
+    # if more_arrow:
+    #     # headless 模式下会出现click not reachable exception
+    #     my_actionChain = ActionChains(driver.driver)
+    #     my_actionChain.move_to_element(more_arrow).perform()
+    #     driver.click("css", "#calendar-container > div.event-count-hint.next.ng-star-inserted > div.count")
+    #     time.sleep(8)
+    #     more_els_eventID = driver.locateElements("css", "#calendar-container > div.dhx_cal_data div[event_id]")
+    #     for el in more_els_eventID:
+    #         id = el.get_attribute("event_id")
+    #         event_id.append(id)
     return list(set(event_id))
 
 def get_patientID(eventIDs):
@@ -74,6 +82,7 @@ def get_patientID(eventIDs):
         print("patientID: ", res.json()["patientId"])
         patientIds.append(res.json()["patientId"])
     s.close()
+    print(f"will ACQ {len(patientIds)} patients data")
     return  patientIds
 
 def get_patientInfo(i, url_patient_detail):
