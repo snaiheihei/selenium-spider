@@ -109,7 +109,11 @@ def get_patientInfo(i, url_patient_detail):
 regex = re.compile(".诊")
 def clean_info(patientInfo):
     # [1, '7月17日', '14:30 - 16:00 复诊预约 预约 【合众齿科】', '朴珍荣(未知科室)', '22061215', '陈尚林', '[根管治疗]  ', '810.00', '']
-    patientInfo[2] = regex.search(patientInfo[2]).group()
+    try:
+        patientInfo[2] = regex.search(patientInfo[2]).group()
+    except Exception as e:
+        print("ignore error", e)
+        patientInfo[2] = ""
     patientInfo[3] = patientInfo[3].split("(")[0]
     print(patientInfo)
     return patientInfo
