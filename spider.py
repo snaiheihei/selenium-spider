@@ -16,18 +16,19 @@ def logon(url_logon, name, passwd):
     driver.click("id", "login-button")
     print("="*50)
     print("logon successful~")
-    time.sleep(5)
+    time.sleep(1)
     driver.click("css", "#mCSB_4 > div.mCSB_container > div.ares3-sidebar-container.ng-isolate-scope > ul > li:nth-child(2) > a")
     driver.switch_iframe(driver.locateElement("css", "#hebe-container-level-0 > iframe"))
     print("switch iframe successful")
     # 跳过引导，切到今日
-    time.sleep(5)
     driver.click("css", ".introjs-skipbutton")
     driver.click("css", "#switch-appt-date > button")
-    time.sleep(5)
+    time.sleep(1)
 
 def get_eventID():
     # new requirment 7/21
+    select_el = driver.locateElement("css", "#switch-appt-view > nz-select")
+    actionChain.move_to_element(select_el).perform()
     select_el = driver.locateElement("css", "#switch-appt-view > nz-select")
     select_el.click()
     actionChain.move_to_element(select_el).move_by_offset(30,50).click().perform()
