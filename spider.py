@@ -26,21 +26,35 @@ def logon(url_logon, name, passwd):
     time.sleep(1)
 
 def get_eventID():
-    # new requirment 7/21
+    # new requirment one week data 7/21
     select_el = driver.locateElement("css", "#switch-appt-view > nz-select")
     actionChain.move_to_element(select_el).perform()
     select_el = driver.locateElement("css", "#switch-appt-view > nz-select")
     select_el.click()
     actionChain.move_to_element(select_el).move_by_offset(30,50).click().perform()
     driver.click("css", "#switch-appt-view > nz-radio-group > label:nth-child(2)")
+    # find child patient  7/23
+    time.sleep(8)
+    html = driver.driver.execute_script("return document.documentElement.outerHTML")
+    regex = re.compile(r'event_id="(\d{3,10})[\s\S]{50,650}icon-child')
+    event_id = regex.findall(html)
+    print(event_id)
+    return event_id
 
     # 获取所有event ID
-    time.sleep(8)
-    event_id = []
-    els_eventID = driver.locateElements("css", "#calendar-container > div.dhx_cal_data div[event_id]")
-    for el in  els_eventID:
-        id = el.get_attribute("event_id")
-        event_id.append(id)
+    # time.sleep(8)
+    # els_eventID = driver.locateElements("css", "#calendar-container > div.dhx_cal_data div[event_id]")
+
+    # for el in  els_eventID:
+    #     try:
+    #         id = el.get_attribute("event_id")
+    #         print("eventID: ", id)
+    #         el.find_element(by=By.CSS_SELECTOR, value=".icon-child")
+    #         print(":::::::: is a child patient....")
+    #         event_id.append(id)
+    #     except Exception:
+    #         pass
+
     # 展开更多
     # more_arrow = driver.locateElement("css", "#calendar-container > div.event-count-hint.next.ng-star-inserted > div.count")
     # if more_arrow:
@@ -53,7 +67,7 @@ def get_eventID():
     #     for el in more_els_eventID:
     #         id = el.get_attribute("event_id")
     #         event_id.append(id)
-    return list(set(event_id))
+    # return list(set(event_id))
 
 def get_patientID(eventIDs):
     # 请求API 获取所有的patient ID
