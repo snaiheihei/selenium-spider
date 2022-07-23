@@ -141,8 +141,8 @@ def writeCSV(data:list):
 
 if __name__ == '__main__':
     url_logon = "https://bjhzck.linkedcare.cn/LogOn"
-    name = "蔡有菊"
-    passwd = "a123456"
+    name = "xxx"
+    passwd = "xxxxxxx"
     logon(url_logon, name, passwd)
     eventIDs = get_eventID()
     patientIDs = get_patientID(eventIDs)
