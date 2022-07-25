@@ -94,6 +94,8 @@ def get_patientID(eventIDs):
     for eid in eventIDs:
         url_patient_info = f"https://api-hn01.linkedcare.cn:9001/api/v1/appointment/{eid}"
         res = s.get(url_patient_info, headers=headers)
+        # print(res.content.decode("utf8"))
+        print("startTime: ", res.json()["startTime"])
         print("patientID: ", res.json()["patientId"])
         patientIds.append(res.json()["patientId"])
     s.close()
@@ -118,7 +120,8 @@ def get_patientInfo(i, url_patient_detail):
     driver.click("css", "#patientContainer > div.patient-content-container.k-pane > div:nth-child(1) > div:nth-child(2) > div.patient-menu-bar-view > div > ul > li:nth-child(3) > span")
     order_cost = driver.get_text("css", "#chargeorderPaging > table > tbody > tr:nth-child(1) > td:nth-child(9)")
     note = driver.get_text("css", "#chargeorderPaging > table > tbody > tr:nth-child(1) > td:nth-child(12) > span")
-    return [i, date, diagnostic, dc_name, pt_num, pt_name, project, order_cost, note]
+    url_check = url_patient_detail
+    return [i, date, diagnostic, dc_name, pt_num, pt_name, project, order_cost, note, url_check]
 
 regex = re.compile(".诊")
 def clean_info(patientInfo):
@@ -133,7 +136,7 @@ def clean_info(patientInfo):
     return patientInfo
 
 def writeCSV(data:list):
-    header = ['index', 'date', 'diagnostic', 'dc_name', 'pt_num', 'pt_name', 'project', 'order_cost', 'note']
+    header = ['index', 'date', 'diagnostic', 'dc_name', 'pt_num', 'pt_name', 'project', 'order_cost', 'note', "url_check"]
     with open("result.csv", "w", encoding="utf-8-sig", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(header)
@@ -141,16 +144,17 @@ def writeCSV(data:list):
 
 if __name__ == '__main__':
     url_logon = "https://bjhzck.linkedcare.cn/LogOn"
-    name = "xxx"
-    passwd = "xxxxxxx"
+    name = "蔡有菊"
+    passwd = "a123456"
     logon(url_logon, name, passwd)
     eventIDs = get_eventID()
     patientIDs = get_patientID(eventIDs)
-
+    
     # 请求每一个patient 页面，获取详细信息
     i = 1
     for pid in patientIDs:
         url_patient_detail = f"https://bjhzck.linkedcare.cn/ares3/#/patient/info/{pid}/record"
+        # url_patient_detail = f"https://bjhzck.linkedcare.cn/ares3/#/patient/info/290835/record"
         print(url_patient_detail)
         patientInfo = get_patientInfo(i, url_patient_detail)
         patientInfo_clean = clean_info(patientInfo)
