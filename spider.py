@@ -95,14 +95,16 @@ def get_patientID(eventIDs):
         url_patient_info = f"https://api-hn01.linkedcare.cn:9001/api/v1/appointment/{eid}"
         res = s.get(url_patient_info, headers=headers)
         # print(res.content.decode("utf8"))
-        print("startTime: ", res.json()["startTime"])
+        print("startTime: ", res.json()["startTime"].split("T")[0].strip())
         print("patientID: ", res.json()["patientId"])
-        patientIds.append(res.json()["patientId"])
+        patient_dic = {"startTime": res.json()["startTime"].split("T")[0].strip(), "patientID": res.json()["patientId"]}
+        # patientIds.append(res.json()["patientId"])
+        patientIds.append(patient_dic)
     s.close()
     print(f"will ACQ {len(patientIds)} patients data")
     return  patientIds
 
-def get_patientInfo(i, url_patient_detail):
+def get_patientInfo(i, url_patient_detail, starttime):
     # 请求每一个patient 页面，获取详细信息
     # https://bjhzck.linkedcare.cn/ares3/#/patient/info/406275/record
     driver.driver.get(url_patient_detail)
@@ -112,16 +114,36 @@ def get_patientInfo(i, url_patient_detail):
     pt_num = driver.get_text("css", "#patient-info-base-wrap > div.panel.panel-default > div.panel-body > div:nth-child(1) > div.sub-panel-body > table > tbody > tr:nth-child(2) > td:nth-child(1) > span.notes-value.ng-binding")
     time.sleep(0.3)
     driver.click("css", "#patientContainer > div.patient-content-container.k-pane > div:nth-child(1) > div:nth-child(2) > div.patient-menu-bar-view > div > ul > li:nth-child(2) > span")
-    date = driver.get_text("css", "#timeline > div:nth-child(1) > div.timeline-icon.bg-primary.ng-binding > strong")
-    diagnostic = driver.get_text("css", "#timeline > div:nth-child(1) > div.timeline-content > div.timeline-heading.clearfix.timeBox > table > tbody > tr > td:nth-child(1) > h3 > strong")
+    date = starttime
+    els_time = driver.locateElements("css", "#timeline > div > div.timeline-icon.bg-primary.ng-binding")
+    # 就诊记录时间对应
+    diagnostic = ""
+    if els_time:
+        for index, value in enumerate(els_time):
+            c = value.text
+            list_time = starttime.split("-")
+            if c.split("\n")[1] in list_time[0] and c.split("\n")[0].split("月")[0] in list_time[1] and c.split("\n")[0].split("月")[1].split("日")[0] in list_time[2]:
+                print("就诊记录时间匹配成功")
+                diagnostic = driver.get_text("css", f"#timeline > div:nth-child({index+1}) > div.timeline-content > div.timeline-heading.clearfix.timeBox > table > tbody > tr > td:nth-child(1) > h3 > strong")
+
     dc_name = driver.get_text("css", "#timeline > div:nth-child(1) > div.timeline-content > div.timeline-body > ul > li:nth-child(2) > span:nth-child(1) > strong")
     project = driver.get_text("css", "#timeline > div:nth-child(1) > div.timeline-content > div.timeline-body > ul > li.ng-scope > span > strong")
     time.sleep(0.3)
     driver.click("css", "#patientContainer > div.patient-content-container.k-pane > div:nth-child(1) > div:nth-child(2) > div.patient-menu-bar-view > div > ul > li:nth-child(3) > span")
-    order_cost = driver.get_text("css", "#chargeorderPaging > table > tbody > tr:nth-child(1) > td:nth-child(9)")
-    note = driver.get_text("css", "#chargeorderPaging > table > tbody > tr:nth-child(1) > td:nth-child(12) > span")
-    url_check = url_patient_detail
-    return [i, date, diagnostic, dc_name, pt_num, pt_name, project, order_cost, note, url_check]
+    # chargeorderPaging > table > tbody > tr:nth-child(1)
+    # 消费时间对应
+    els = driver.locateElements("css", "#chargeorderPaging > table > tbody > tr")
+    order_cost = 0
+    note = ""
+    if els:
+        for index, value in enumerate(els):
+            content = value.text
+            if starttime in content:
+                print("消费时间匹配成功。。。")
+                order_cost += float(driver.get_text("css", f"#chargeorderPaging > table > tbody > tr:nth-child({index+1}) > td:nth-child(9)"))
+                note += driver.get_text("css", f"#chargeorderPaging > table > tbody > tr:nth-child({index+1}) > td:nth-child(12) > span")
+
+    return [i, date, diagnostic, dc_name, pt_num, pt_name, project, order_cost, note]
 
 regex = re.compile(".诊")
 def clean_info(patientInfo):
@@ -136,7 +158,7 @@ def clean_info(patientInfo):
     return patientInfo
 
 def writeCSV(data:list):
-    header = ['index', 'date', 'diagnostic', 'dc_name', 'pt_num', 'pt_name', 'project', 'order_cost', 'note', "url_check"]
+    header = ['index', 'date', 'diagnostic', 'dc_name', 'pt_num', 'pt_name', 'project', 'order_cost', 'note']
     with open("result.csv", "w", encoding="utf-8-sig", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(header)
@@ -149,14 +171,13 @@ if __name__ == '__main__':
     logon(url_logon, name, passwd)
     eventIDs = get_eventID()
     patientIDs = get_patientID(eventIDs)
-    
+
     # 请求每一个patient 页面，获取详细信息
     i = 1
     for pid in patientIDs:
-        url_patient_detail = f"https://bjhzck.linkedcare.cn/ares3/#/patient/info/{pid}/record"
-        # url_patient_detail = f"https://bjhzck.linkedcare.cn/ares3/#/patient/info/290835/record"
+        url_patient_detail = f"https://bjhzck.linkedcare.cn/ares3/#/patient/info/{pid['patientID']}/record"
         print(url_patient_detail)
-        patientInfo = get_patientInfo(i, url_patient_detail)
+        patientInfo = get_patientInfo(i, url_patient_detail, starttime=pid["startTime"] )
         patientInfo_clean = clean_info(patientInfo)
         i += 1
         patient_infos.append(patientInfo_clean)
