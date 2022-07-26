@@ -140,7 +140,7 @@ def get_patientInfo(i, url_patient_detail, starttime):
             content = value.text
             if starttime in content:
                 print("消费时间匹配成功。。。")
-                order_cost += float(driver.get_text("css", f"#chargeorderPaging > table > tbody > tr:nth-child({index+1}) > td:nth-child(9)"))
+                order_cost += float("".join(driver.get_text("css", f"#chargeorderPaging > table > tbody > tr:nth-child({index+1}) > td:nth-child(9)").split(",")))
                 note += driver.get_text("css", f"#chargeorderPaging > table > tbody > tr:nth-child({index+1}) > td:nth-child(12) > span")
 
     return [i, date, diagnostic, dc_name, pt_num, pt_name, project, order_cost, note]
