@@ -77,7 +77,7 @@ def get_patientID(eventIDs):
     s = requests.Session()
     [s.cookies.set(c['name'], c['value']) for c in current_cookies]
     headers = {
-        'authorization': 'bearer 69-pAufpdUy8U1nUPootQzEaZhwrMFQ6LXFfRsEKe-3Xf86L-2NqNDrA06gNDKBipzlpHcesIN-HDrjPWRXrJI07lEal29iGA4mPCP1Fzjs3alaH7NjAj_cC1hKYWH-M8RAKwdOG_DHfeqQhBkMQV7CvOPX7V-Ak68PKV1GxZBBWctZCqSTfw9OScUiXFkX7r5sDRCG4uSrOVXgh8K12WKOB5N3Sic_Altd0KwJq-35cSK4lk0MfRT9NE_VtnnkK_mrajRcYD5IKaQKzZANsaNEraqhRMeY9cWt6nfC57mk.eyJ0aWQiOiIxYjdiZTBjMy1lNTliLTRhZDctODcyNC03MDUxZWEwN2IxN2EifQ==',
+        'authorization': 'bearer 8fm2Ep3hXSAXrSeCd9kLzYgvPXeVZ5zHO-a99nyb5POqaso1d5dMSFBgpBHz1ojWTlxgH87hH2xn2xj3GzQ-0sy34XnZoK2jMbymNHMpi6ZgGyRphG_aXuDyCzlbgEsYy_0wtsedaBlgzX7wKI3OFZXt3On7i4rQRzwuyISoTjStfIPif1eyrsN_AXS2qS2VEYO_lpV8IgLfMj4creoijZSItCXi3Q49l2b4yNvjVSwraWbmWnzQpdGKiEJoGWw9OJ-0bHPS2OoYgCphci08DjuUYsXqxJsStrg-KlSsNdXDNmM2Xh9OVOSbuXi6YofY.eyJ0aWQiOiIxYjdiZTBjMy1lNTliLTRhZDctODcyNC03MDUxZWEwN2IxN2EifQ==',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.66 Safari/537.36',
         'authority': 'api-hn01.linkedcare.cn:9001',
         'method': 'GET',
