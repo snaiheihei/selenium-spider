@@ -77,6 +77,7 @@ def get_patientID(eventIDs):
     s = requests.Session()
     [s.cookies.set(c['name'], c['value']) for c in current_cookies]
     headers = {
+        # authorization 须定期获取更新
         'authorization': 'bearer 8fm2Ep3hXSAXrSeCd9kLzYgvPXeVZ5zHO-a99nyb5POqaso1d5dMSFBgpBHz1ojWTlxgH87hH2xn2xj3GzQ-0sy34XnZoK2jMbymNHMpi6ZgGyRphG_aXuDyCzlbgEsYy_0wtsedaBlgzX7wKI3OFZXt3On7i4rQRzwuyISoTjStfIPif1eyrsN_AXS2qS2VEYO_lpV8IgLfMj4creoijZSItCXi3Q49l2b4yNvjVSwraWbmWnzQpdGKiEJoGWw9OJ-0bHPS2OoYgCphci08DjuUYsXqxJsStrg-KlSsNdXDNmM2Xh9OVOSbuXi6YofY.eyJ0aWQiOiIxYjdiZTBjMy1lNTliLTRhZDctODcyNC03MDUxZWEwN2IxN2EifQ==',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.66 Safari/537.36',
         'authority': 'api-hn01.linkedcare.cn:9001',
@@ -144,7 +145,7 @@ def get_patientInfo(i, url_patient_detail, starttime):
                 if str_cost == '--':
                     order_cost += 0
                 else:
-                    order_cost += float("".join(str_cost.split(",")))
+                    order_cost += float("".join(str_cost.split(",")).split("\n")[0])
                 note += driver.get_text("css", f"#chargeorderPaging > table > tbody > tr:nth-child({index+1}) > td:nth-child(12) > span")
 
     return [i, date, diagnostic, dc_name, pt_num, pt_name, project, order_cost, note]
@@ -170,8 +171,8 @@ def writeCSV(data:list):
 
 if __name__ == '__main__':
     url_logon = "https://bjhzck.linkedcare.cn/LogOn"
-    name = "蔡有菊"
-    passwd = "a123456"
+    name = "xxx"
+    passwd = "xxxxxxxx"
     logon(url_logon, name, passwd)
     eventIDs = get_eventID()
     patientIDs = get_patientID(eventIDs)
