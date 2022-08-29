@@ -20,6 +20,7 @@ def logon(url_logon, name, passwd):
     driver.click("css", "#mCSB_4 > div.mCSB_container > div.ares3-sidebar-container.ng-isolate-scope > ul > li:nth-child(2) > a")
     driver.switch_iframe(driver.locateElement("css", "#hebe-container-level-0 > iframe"))
     print("switch iframe successful")
+    time.sleep(3)
     # 跳过引导，切到今日
     driver.click("css", ".introjs-skipbutton")
     driver.click("css", "#switch-appt-date > button")
@@ -78,7 +79,7 @@ def get_patientID(eventIDs):
     [s.cookies.set(c['name'], c['value']) for c in current_cookies]
     headers = {
         # authorization 须定期获取更新
-        'authorization': 'bearer 8fm2Ep3hXSAXrSeCd9kLzYgvPXeVZ5zHO-a99nyb5POqaso1d5dMSFBgpBHz1ojWTlxgH87hH2xn2xj3GzQ-0sy34XnZoK2jMbymNHMpi6ZgGyRphG_aXuDyCzlbgEsYy_0wtsedaBlgzX7wKI3OFZXt3On7i4rQRzwuyISoTjStfIPif1eyrsN_AXS2qS2VEYO_lpV8IgLfMj4creoijZSItCXi3Q49l2b4yNvjVSwraWbmWnzQpdGKiEJoGWw9OJ-0bHPS2OoYgCphci08DjuUYsXqxJsStrg-KlSsNdXDNmM2Xh9OVOSbuXi6YofY.eyJ0aWQiOiIxYjdiZTBjMy1lNTliLTRhZDctODcyNC03MDUxZWEwN2IxN2EifQ==',
+        'authorization': 'bearer u_Qbh9oeU0NUggH-fniH_HCEbN-6GALt_RTbpz0v2CCqLjPJnhtB84NMiggxZ56G4z02atzqHGqBBfiItGHRpsI_3Jt60G6Hnv-FL11Wa2zPEbmbSYHtDC8h7ZjAPAOaXID8xCbUYROqh0W2rimRSYlwoFRPxZJ0i3hFL9gPT9lmS9Zt8hyQ7gIDNFjuW2TNcpWeu-0Hnl6_7oYVs8zCfleh-9SKZEWEnDwQGRRbMlXp03zyv5IooA5bnKUsiYVHFPgix14D6bPn1TJwOOYLyXh2Yh1oI95TRIPI4KLrp4ctm3MQ86ZxTWp9IHLTKuVO.eyJ0aWQiOiIxYjdiZTBjMy1lNTliLTRhZDctODcyNC03MDUxZWEwN2IxN2EifQ==',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.66 Safari/537.36',
         'authority': 'api-hn01.linkedcare.cn:9001',
         'method': 'GET',
@@ -113,11 +114,30 @@ def get_patientInfo(i, url_patient_detail, starttime):
     time.sleep(0.5)
     pt_name = driver.get_text("css", "td > label.ng-binding")
     pt_num = driver.get_text("css", "#patient-info-base-wrap > div.panel.panel-default > div.panel-body > div:nth-child(1) > div.sub-panel-body > table > tbody > tr:nth-child(2) > td:nth-child(1) > span.notes-value.ng-binding")
-    time.sleep(0.3)
-    driver.click("css", "#patientContainer > div.patient-content-container.k-pane > div:nth-child(1) > div:nth-child(2) > div.patient-menu-bar-view > div > ul > li:nth-child(2) > span")
     date = starttime
-    els_time = driver.locateElements("css", "#timeline > div > div.timeline-icon.bg-primary.ng-binding")
+    # 消费时间对应， 一天看多次消费累加
+    driver.click("css", "#patientContainer > div.patient-content-container.k-pane > div:nth-child(1) > div:nth-child(2) > div.patient-menu-bar-view > div > ul > li:nth-child(3) > span")
+    time.sleep(0.3)
+    els = driver.locateElements("css", "#chargeorderPaging > table > tbody > tr")
+    order_cost = 0
+    note = ""
+    if els:
+        for index, value in enumerate(els):
+            content = value.text
+            if starttime in content:
+                print("消费时间匹配成功。。。")
+                str_cost = driver.get_text("css",
+                                           f"#chargeorderPaging > table > tbody > tr:nth-child({index + 1}) > td:nth-child(9)")
+                if str_cost == '--':
+                    order_cost += 0
+                else:
+                    order_cost += float("".join(str_cost.split(",")).split("\n")[0])
+                note += driver.get_text("css", f"#chargeorderPaging > table > tbody > tr:nth-child({index + 1}) > td:nth-child(12) > span")
+
     # 就诊记录时间对应
+    driver.click("css", "#patientContainer > div.patient-content-container.k-pane > div:nth-child(1) > div:nth-child(2) > div.patient-menu-bar-view > div > ul > li:nth-child(2) > span")
+    time.sleep(0.3)
+    els_time = driver.locateElements("css", "#timeline > div > div.timeline-icon.bg-primary.ng-binding")
     diagnostic = ""
     if els_time:
         for index, value in enumerate(els_time):
@@ -127,28 +147,10 @@ def get_patientInfo(i, url_patient_detail, starttime):
                 print("就诊记录时间匹配成功")
                 diagnostic = driver.get_text("css", f"#timeline > div:nth-child({index+1}) > div.timeline-content > div.timeline-heading.clearfix.timeBox > table > tbody > tr > td:nth-child(1) > h3 > strong")
 
-    dc_name = driver.get_text("css", "#timeline > div:nth-child(1) > div.timeline-content > div.timeline-body > ul > li:nth-child(2) > span:nth-child(1) > strong")
-    project = driver.get_text("css", "#timeline > div:nth-child(1) > div.timeline-content > div.timeline-body > ul > li.ng-scope > span > strong")
-    time.sleep(0.3)
-    driver.click("css", "#patientContainer > div.patient-content-container.k-pane > div:nth-child(1) > div:nth-child(2) > div.patient-menu-bar-view > div > ul > li:nth-child(3) > span")
-    # chargeorderPaging > table > tbody > tr:nth-child(1)
-    # 消费时间对应
-    els = driver.locateElements("css", "#chargeorderPaging > table > tbody > tr")
-    order_cost = 0
-    note = ""
-    if els:
-        for index, value in enumerate(els):
-            content = value.text
-            if starttime in content:
-                print("消费时间匹配成功。。。")
-                str_cost = driver.get_text("css", f"#chargeorderPaging > table > tbody > tr:nth-child({index + 1}) > td:nth-child(9)")
-                if str_cost == '--':
-                    order_cost += 0
-                else:
-                    order_cost += float("".join(str_cost.split(",")).split("\n")[0])
-                note += driver.get_text("css", f"#chargeorderPaging > table > tbody > tr:nth-child({index+1}) > td:nth-child(12) > span")
-
-    return [i, date, diagnostic, dc_name, pt_num, pt_name, project, order_cost, note]
+                dc_name = driver.get_text("css", f"#timeline > div:nth-child({index+1}) > div.timeline-content > div.timeline-body > ul > li:nth-child(2) > span:nth-child(1) > strong")
+                project = driver.get_text("css", f"#timeline > div:nth-child({index+1}) > div.timeline-content > div.timeline-body > ul > li.ng-scope > span > strong")
+                # 同一天病人看多次病, 返回迭代器
+                yield [i, date, diagnostic, dc_name, pt_num, pt_name, project, order_cost, note]
 
 regex = re.compile(".诊")
 def clean_info(patientInfo):
@@ -171,8 +173,8 @@ def writeCSV(data:list):
 
 if __name__ == '__main__':
     url_logon = "https://bjhzck.linkedcare.cn/LogOn"
-    name = "xxx"
-    passwd = "xxxxxxxx"
+    name = "蔡有菊"
+    passwd = "c18695928998"
     logon(url_logon, name, passwd)
     eventIDs = get_eventID()
     patientIDs = get_patientID(eventIDs)
@@ -182,10 +184,10 @@ if __name__ == '__main__':
     for pid in patientIDs:
         url_patient_detail = f"https://bjhzck.linkedcare.cn/ares3/#/patient/info/{pid['patientID']}/record"
         print(url_patient_detail)
-        patientInfo = get_patientInfo(i, url_patient_detail, starttime=pid["startTime"] )
-        patientInfo_clean = clean_info(patientInfo)
-        i += 1
-        patient_infos.append(patientInfo_clean)
+        for patientInfo in get_patientInfo(i, url_patient_detail, starttime=pid["startTime"] ):
+            patientInfo_clean = clean_info(patientInfo)
+            i += 1
+            patient_infos.append(patientInfo_clean)
     # 保存数据到CSV
     writeCSV(patient_infos)
     print("main routine exit ...")
